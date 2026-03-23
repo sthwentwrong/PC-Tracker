@@ -33,9 +33,9 @@ class Tracker:
     def get_free_task(self):
         self.task = free_task()
 
-    def start(self):
+    def start(self, monitor_region=None):
         if not self.running:
-            self.monitor = Monitor(self.task)
+            self.monitor = Monitor(self.task, monitor_region=monitor_region)
             self.monitor.start()
             self.running = True
 

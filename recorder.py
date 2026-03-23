@@ -11,7 +11,7 @@ MARK_IMAGE = False
 
 
 class Recorder:
-    def __init__(self, task=None, buffer_len=1, directory="events"):
+    def __init__(self, task=None, buffer_len=1, directory="events", monitor_region=None):
         self.pool = multiprocessing.Pool()
         self.task = task
         self.buffer_len = buffer_len
@@ -37,7 +37,7 @@ class Recorder:
         self.md_filename = os.path.join(
             self.directory, f"{prefix}_{self.timestamp_str}.md")
 
-        self.recent_screen = RecentScreen()
+        self.recent_screen = RecentScreen(region=monitor_region)
 
         self.screenshot_f_list = []
 
@@ -88,8 +88,11 @@ class Recorder:
             point = None
 
         # Async save screenshot
+        capture_size = self.recent_screen.capture_size
+        capture_origin = self.recent_screen.capture_origin
         self.pool.apply_async(
-            save_screenshot, (screenshot_filename, event['screenshot'], rect, point))
+            save_screenshot, (screenshot_filename, event['screenshot'],
+                              capture_size, capture_origin, rect, point))
 
         event['screenshot'] = screenshot_filename
         event['action'] = str(action)
@@ -161,16 +164,32 @@ class Recorder:
             delete_file(f)
 
 
-def save_screenshot(save_filename, screenshot, rect=None, point=None):
+def save_screenshot(save_filename, screenshot, capture_size, capture_origin,
+                    rect=None, point=None):
     # Create image from buffer
     image = Image.frombuffer(
         'RGB',
-        screen_size,
+        capture_size,
         screenshot, 'raw', 'BGRX', 0, 1
     )
 
     if MARK_IMAGE:
-        mark_image(image, rect, point)
+        # Offset coordinates: screen coords → image coords (subtract capture origin)
+        offset_rect = None
+        offset_point = None
+        if rect is not None:
+            offset_rect = {
+                "left": rect["left"] - capture_origin[0],
+                "top": rect["top"] - capture_origin[1],
+                "right": rect["right"] - capture_origin[0],
+                "bottom": rect["bottom"] - capture_origin[1],
+            }
+        if point is not None:
+            offset_point = {
+                "x": point["x"] - capture_origin[0],
+                "y": point["y"] - capture_origin[1],
+            }
+        mark_image(image, offset_rect, offset_point)
 
     # Save image
     image.save(save_filename)

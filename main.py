@@ -1,5 +1,6 @@
 import multiprocessing
 from tracker import Tracker
+from capturer import get_monitor_region
 from task import Task
 import tkinter as tk
 import tkinter.font as tkFont
@@ -20,7 +21,7 @@ class TrackerApp:
 
         self.root.configure(bg="#f0f0f0")  # Set background color
         self.root.resizable(True, True)
-        self.root.resizable(False, False)  # Disable resizing the window
+        # self.root.resizable(False, False)  # Disable resizing the window
 
         # Font
         self.title_font = tkFont.Font(
@@ -28,6 +29,9 @@ class TrackerApp:
         self.label_font = tkFont.Font(family="Helvetica", size=18)
         self.button_font = tkFont.Font(family="Arial", size=12)
         self.text_font = tkFont.Font(family="Helvetica", size=12)
+
+        # Single screen capture option
+        self.single_screen_var = tk.BooleanVar(value=False)
 
         # Label
         self.title_label = tk.Label(
@@ -66,6 +70,14 @@ class TrackerApp:
         self.non_task_button.pack(pady=10)
         ToolTip(self.non_task_button,
                 "Tracking while using computer freely")
+
+        self.single_screen_check = tk.Checkbutton(
+            self.root, text="Current Screen Only",
+            variable=self.single_screen_var,
+            font=self.button_font, bg="#f0f0f0")
+        self.single_screen_check.pack(pady=10)
+        ToolTip(self.single_screen_check,
+                "Only capture the monitor where this window is located")
 
     def task_oriented_interface(self):
         self.clear_interface()
@@ -224,13 +236,21 @@ class TrackerApp:
             if widget != self.title_label:
                 widget.destroy()
 
+    def _get_monitor_region(self):
+        """Return the monitor region of the app window, or None for all screens."""
+        if not self.single_screen_var.get():
+            return None
+        x = self.root.winfo_x() + self.root.winfo_width() // 2
+        y = self.root.winfo_y() + self.root.winfo_height() // 2
+        return get_monitor_region(x, y)
+
     """
     Given Task Mode Functions
     """
 
     def start_given_task_tracking(self):
         self.clear_interface()
-        self.tracker.start()
+        self.tracker.start(monitor_region=self._get_monitor_region())
 
         self.title_label.config(text="Tracking...")
         self.title_label.pack(pady=(30, 10))
@@ -330,7 +350,7 @@ class TrackerApp:
     def start_free_task_tracking(self):
         self.clear_interface()
         self.tracker.get_free_task()
-        self.tracker.start()
+        self.tracker.start(monitor_region=self._get_monitor_region())
 
         self.title_label.config(text="Tracking...")
         self.title_label.pack(pady=(30, 10))
@@ -416,7 +436,7 @@ class TrackerApp:
 
     def start_non_task_tracking(self):
         self.clear_interface()
-        self.tracker.start()
+        self.tracker.start(monitor_region=self._get_monitor_region())
 
         self.title_label.config(text="Tracking...")
         self.title_label.pack(pady=30)

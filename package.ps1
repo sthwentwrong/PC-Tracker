@@ -11,7 +11,9 @@ else
 }
 
 # 1. run pyinstaller
-pyinstaller main.spec
+# pyinstaller main.spec
+uv run pyinstaller main.spec
+# uv run pyinstaller --onefile -w main.py
 
 # 2. check if ./dist/tracker.exe is generated
 if (Test-Path "./dist/tracker.exe")

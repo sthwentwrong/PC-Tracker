@@ -4,7 +4,13 @@ git clone and then:
 uv sync
 ```
 
-# build to onefile
+# build to onefile -> dist
 ```bash
 uv run pyinstaller --onefile -w main.py
+```
+or 
+
+```bash
+package.ps1
+
 ```

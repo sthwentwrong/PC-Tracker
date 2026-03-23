@@ -27,6 +27,10 @@ Below is an example of the collected human-computer interaction trajectories:
 
 After starting the software, you can choose between **Task Oriented Mode** or **Non-Task Oriented Mode** for recording.
 
+#### Option: Current Scren Only
+- Unchecked with default, it capture all desktops if you have multi-monitor 
+- Checked: it capture the screen the app on
+
 ### Task Oriented Mode
 
 This mode is divided into two sub-modes: **Given Task** and **Free Task**.

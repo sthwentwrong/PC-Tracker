@@ -83,8 +83,8 @@ class Action:
 
 
 class Monitor:
-    def __init__(self, task):
-        self.recorder = Recorder(task)
+    def __init__(self, task, monitor_region=None):
+        self.recorder = Recorder(task, monitor_region=monitor_region)
         self.type_buffer = TypeBuffer(self.recorder)  # How many keyboard operations have been executed consecutively
         self.timer = Timer(self.recorder, self.type_buffer)
         self.scroll_buffer = ScrollBuffer(self.recorder)
